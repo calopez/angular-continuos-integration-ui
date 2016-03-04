@@ -1,0 +1,155 @@
+/**
+ * ChangeListController
+ *
+ * @module myapp
+ *
+ * @requires angular
+ *
+ * @author Carlos A. Lopez <karloslopez@me.com>
+ *
+ * @returns instance of the ChangeListController
+ *
+ */
+'use strict';
+
+require('ngtemplate?relativeTo=/myapp/components/changeList!./reportPanel.html');
+require('./changeList.styl');
+require('angular');
+
+var ChangeListController = function ($scope, capitalizeFilter, ChangesAPIService, PollingService) {
+
+    var ChangeList = this;
+
+    var polling = true;
+
+
+    ChangeList.humanDate = function (unixtime) {
+        return require('moment').unix(unixtime / 1000).format("DD/MM/YYYY  h:mm a");
+    };
+
+    /** ------------------------------------------------------------------------------
+     *                                HELPERS
+     * -------------------------------------------------------------------------------- */
+
+    //    ChangeList.setCurrent = function (id) {
+    ChangeList.expandAccordion = function (id) {
+
+        ChangeList.current = id;
+        $scope.$broadcast('change-list/item/expand-accordion', {
+            itemId: id
+        });
+    };
+
+
+    /** ------------------------------------------------------------------------------
+     *                                GET CHANGE LIST
+     * -------------------------------------------------------------------------------- */
+
+    var service = ChangesAPIService.Changes(),
+        request = PollingService.Polling($scope),
+        interval = 1000;
+
+    request.startPolling('change-list/got', service.getChangeList, interval);
+
+
+    ChangeList.togglePolling = function () {
+        if (polling) {
+            request.stopPolling();
+            polling = false;
+        } else {
+            request.startPolling('change-list/got', service.getChangeList, interval);
+            polling = true;
+        }
+    };
+
+    ChangeList.data = [];
+    var i, j, lenght;
+    $scope.$on('change-list/got', function (evt, response) {
+
+        var itemsUpdated = [];
+
+        if (ChangeList.data.length === 0) {
+            ChangeList.data = response.data;
+        } {
+            //        angular.extend( ChangeList.data , response.data)
+            lenght = ChangeList.data.length;
+            for (i = 0; i < lenght; i++) {
+                for (j = 0; j < lenght; j++) {
+
+                    if (ChangeList.data[i].id === response.data[j].id) {
+
+
+                        ChangeList.data[i].id = response.data[j].id;
+                        ChangeList.data[i].type = response.data[j].type;
+                        ChangeList.data[i].owner = response.data[j].owner;
+                        ChangeList.data[i].state = response.data[j].state;
+                        ChangeList.data[i].step = response.data[j].step;
+//                        if (Number(ChangeList.data[i].id) === 432459){
+//                            console.log(response.data[j].metrics);
+//                        }
+                        angular.extend(ChangeList.data[i].metrics, response.data[j].metrics);
+                        angular.extend(ChangeList.data[i].build, response.data[j].build);
+                        angular.extend(ChangeList.data[i].unittest, response.data[j].unittest);
+                        angular.extend(ChangeList.data[i].functest, response.data[j].functest);
+
+
+
+
+                    }
+                }
+            }
+        }
+
+
+
+
+
+
+    });
+
+
+    var classes = {
+        undefined: 'running',
+        true: 'success',
+        false: 'fail'
+    };
+
+    ChangeList.progressBarClass = function (succeed) {
+        return classes[succeed];
+    };
+
+    var gradientClass = {
+        true: 'successful-gradient',
+        false: 'failed-gradient'
+    };
+
+    ChangeList.gradientClass = function (succeed) {
+        return gradientClass[succeed === false];
+    };
+
+    ChangeList.currentItemClass = function (id) {
+        if (ChangeList.current === id) {
+            return 'expanded';
+        }
+    };
+
+    ChangeList.getMetricPointer = function (score) {
+        switch (true) {
+        case score.current > score.past:
+            return 'up';
+        case score.current < score.past:
+            return 'down';
+        default:
+            return 'same';
+        }
+    };
+
+
+
+
+
+};
+
+ChangeListController.$inject = ['$scope', 'capitalizeFilter', 'ChangesAPIService', 'PollingService'];
+
+module.exports = ChangeListController;

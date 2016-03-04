@@ -1,0 +1,18 @@
+<div class="test-box" class="graph-box">
+    <header>Unit Test</header>
+    <div class="test-box-content">
+        <section class="pie-chart">
+            <div class="chart">
+                <div simple-pie-chart chart-data="TestInfo.pieChartData" chart-colors="['#71AF52','#EA7C3C']" settings="TestInfo.chartSettings"></div>
+            </div>
+            <div class="pie-percent">
+                <div class="big-number" ng-cloak>{{TestInfo.coveragePercent}}%</div>
+                <div class="number-meaning">test passed</div>
+            </div>
+        </section>
+        <section class="coverage-bar">
+            <progress-bar bar-info="TestInfo.progressBarSettings" ng-cloack>
+            </progress-bar>
+        </section>
+    </div>
+</div>

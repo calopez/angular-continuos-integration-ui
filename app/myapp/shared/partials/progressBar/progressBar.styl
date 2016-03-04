@@ -1,0 +1,18 @@
+.myapp-progress-bar
+    position :relative
+    .progress-bar
+        position :absolute
+        stack()
+    .progress-bar-desc
+        position :absolute
+        line-height : .8rem
+        text-align :center
+        padding :3px
+        div
+            width :200px
+            &:nth-child(1)
+                font-size : .9rem
+                font-weight  :bold
+            &:nth-child(2)
+                margin-top : -4px
+                font-size : .6rem
